@@ -145,3 +145,17 @@ func (k Keeper) GetVoterRoleStats(ctx context.Context) (map[string]int, error) {
 
 	return stats, nil
 }
+
+// CountRolesForAddress counts the number of roles assigned to a specific address
+func (k Keeper) CountRolesForAddress(ctx context.Context, address string) uint32 {
+	var count uint32
+	
+	k.VoterRole.Walk(ctx, nil, func(id uint64, vr types.VoterRole) (stop bool, err error) {
+		if vr.Address == address {
+			count++
+		}
+		return false, nil
+	})
+	
+	return count
+}

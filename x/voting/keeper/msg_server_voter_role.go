@@ -26,6 +26,26 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "only governance account can create voter roles; expected %s, got %s", expectedAuthorityStr, msg.Creator)
 	}
 
+	// Get module params for rate limiting
+	params, err := k.Params.Get(ctx)
+	if err != nil {
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get module params")
+	}
+
+	// Check rate limiting
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	currentTime := sdkCtx.BlockTime().Unix()
+	
+	lastCreationTime, err := k.LastRoleCreationTime.Get(ctx)
+	if err == nil && params.RoleCreationCooldown > 0 {
+		timeSinceLastCreation := currentTime - lastCreationTime
+		if timeSinceLastCreation < int64(params.RoleCreationCooldown) {
+			return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
+				"role creation is rate limited: %d seconds remaining",
+				int64(params.RoleCreationCooldown)-timeSinceLastCreation)
+		}
+	}
+
 	// Validate voter role parameters
 	if err := k.ValidateVoterRole(msg.Address, msg.Role, msg.Multiplier); err != nil {
 		return nil, err
@@ -35,6 +55,14 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 	if k.HasVoterRole(ctx, msg.Address) {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest,
 			fmt.Sprintf("address %s already has a voter role", msg.Address))
+	}
+	
+	// Check max roles per address limit
+	roleCount := k.CountRolesForAddress(ctx, msg.Address)
+	if roleCount >= params.MaxVoterRolesPerAddress {
+		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
+			"address %s already has maximum number of roles (%d)",
+			msg.Address, params.MaxVoterRolesPerAddress)
 	}
 
 	nextId, err := k.VoterRoleSeq.Next(ctx)
@@ -58,6 +86,11 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 		voterRole,
 	); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to set voterRole")
+	}
+
+	// Update last creation time for rate limiting
+	if err = k.LastRoleCreationTime.Set(ctx, currentTime); err != nil {
+		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to update last creation time")
 	}
 
 	// Emit event

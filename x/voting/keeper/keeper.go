@@ -28,6 +28,8 @@ type Keeper struct {
 	ibcKeeperFn  func() *ibckeeper.Keeper
 	VoterRoleSeq collections.Sequence
 	VoterRole    collections.Map[uint64, types.VoterRole]
+	// LastRoleCreationTime tracks the last time a role was created (for rate limiting)
+	LastRoleCreationTime collections.Item[int64]
 }
 
 func NewKeeper(
@@ -50,11 +52,12 @@ func NewKeeper(
 		addressCodec: addressCodec,
 		authority:    authority,
 
-		ibcKeeperFn:  ibcKeeperFn,
-		Port:         collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
-		Params:       collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
-		VoterRole:    collections.NewMap(sb, types.VoterRoleKey, "voterRole", collections.Uint64Key, codec.CollValue[types.VoterRole](cdc)),
-		VoterRoleSeq: collections.NewSequence(sb, types.VoterRoleCountKey, "voterRoleSequence"),
+		ibcKeeperFn:          ibcKeeperFn,
+		Port:                 collections.NewItem(sb, types.PortKey, "port", collections.StringValue),
+		Params:               collections.NewItem(sb, types.ParamsKey, "params", codec.CollValue[types.Params](cdc)),
+		VoterRole:            collections.NewMap(sb, types.VoterRoleKey, "voterRole", collections.Uint64Key, codec.CollValue[types.VoterRole](cdc)),
+		VoterRoleSeq:         collections.NewSequence(sb, types.VoterRoleCountKey, "voterRoleSequence"),
+		LastRoleCreationTime: collections.NewItem(sb, collections.NewPrefix([]byte("last_role_creation")), "lastRoleCreation", collections.Int64Value),
 	}
 	schema, err := sb.Build()
 	if err != nil {

@@ -10,4 +10,10 @@ option go_package = "cosmos-weighted-governance-sdk/x/voting/types";
 message Params {
   option (amino.name) = "cosmosweightedgovernancesdk/x/voting/Params";
   option (gogoproto.equal) = true;
+
+  // max_voter_roles_per_address is the maximum number of roles that can be assigned per address
+  uint32 max_voter_roles_per_address = 1;
+  
+  // role_creation_cooldown is the minimum time (in seconds) between role creations by governance
+  uint32 role_creation_cooldown = 2;
 }
