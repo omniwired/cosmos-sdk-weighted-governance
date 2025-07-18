@@ -1,15 +1,12 @@
 package ante
 
 import (
-	"fmt"
-
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"cosmos-weighted-governance-sdk/x/delegation/keeper"
-	"cosmos-weighted-governance-sdk/x/delegation/types"
 )
 
 // VestingDelegationDecorator checks if vesting accounts are attempting to delegate unvested tokens
