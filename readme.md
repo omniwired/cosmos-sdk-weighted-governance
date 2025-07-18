@@ -1,6 +1,6 @@
 # Enhanced Governance & Staking Controls
 
-A portfolio project demonstrating Cosmos SDK blockchain demonstrating advanced governance mechanisms and vesting-aware staking restrictions. Built with modern Cosmos SDK v0.53.3 and Ignite CLI v29.2.0.
+A Cosmos SDK blockchain portfolio project demonstrating advanced governance mechanisms and vesting-aware staking restrictions. Built with modern Cosmos SDK v0.53.3 and Ignite CLI v29.2.0 to showcase blockchain development skills.
 
 ## Overview
 
