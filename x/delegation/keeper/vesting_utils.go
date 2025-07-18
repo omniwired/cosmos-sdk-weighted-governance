@@ -116,21 +116,51 @@ func (k Keeper) IsVestingAccount(ctx context.Context, address string) bool {
 
 // ValidateStakingTransaction validates a staking transaction for vesting restrictions
 func (k Keeper) ValidateStakingTransaction(ctx context.Context, delegatorAddr string, amount sdk.Coin) error {
-	eligibility, err := k.CheckStakingEligibility(ctx, delegatorAddr)
+	// Convert address
+	accAddr, err := k.authKeeper.AddressCodec().StringToBytes(delegatorAddr)
 	if err != nil {
-		return err
+		return fmt.Errorf("invalid delegator address: %s", err)
 	}
 
-	if !eligibility.IsEligible {
-		return fmt.Errorf("staking not allowed: %s", eligibility.Reason)
+	// Get account
+	account := k.authKeeper.GetAccount(ctx, accAddr)
+	if account == nil {
+		return fmt.Errorf("account not found")
 	}
 
-	// Additional validation for vesting accounts
-	if eligibility.IsVesting {
-		// Could add more sophisticated logic here, such as:
-		// - Only allow staking of vested tokens
-		// - Restrict staking amounts based on vesting schedule
-		// - etc.
+	// Check if it's a vesting account
+	vestingAcc, isVesting := account.(types.VestingAccount)
+	if !isVesting {
+		// Non-vesting accounts can stake freely
+		return nil
+	}
+
+	// Get module params for stake denomination
+	params, err := k.Params.Get(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get module params: %s", err)
+	}
+
+	// Check if the coin being staked matches our stake denomination
+	if amount.Denom != params.StakeDenom {
+		// Not staking the native token, allow it
+		return nil
+	}
+
+	// Get vesting information
+	blockTime := sdk.UnwrapSDKContext(ctx).BlockTime()
+	vestedCoins := vestingAcc.GetVestedCoins(blockTime)
+	
+	// Get current balance
+	balance := k.bankKeeper.GetBalance(ctx, accAddr, params.StakeDenom)
+	
+	// Calculate how much is available for staking (vested coins only)
+	vestedAmount := vestedCoins.AmountOf(params.StakeDenom)
+	
+	// Check if user is trying to stake more than vested amount
+	if amount.Amount.GT(vestedAmount) {
+		return fmt.Errorf("cannot stake unvested tokens: requested %s, vested %s %s", 
+			amount.Amount.String(), vestedAmount.String(), params.StakeDenom)
 	}
 
 	return nil
