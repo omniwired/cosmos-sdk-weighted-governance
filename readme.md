@@ -49,8 +49,8 @@ The system shows several important Cosmos SDK patterns:
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/enhanced-governance-staking
-cd enhanced-governance-staking
+git clone https://github.com/omniwired/cosmos-sdk-weighted-governance
+cd cosmos-sdk-weighted-governance
 
 # Start development chain
 ignite chain serve
