@@ -65,8 +65,15 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 }
 
 func (k msgServer) UpdateVoterRole(ctx context.Context, msg *types.MsgUpdateVoterRole) (*types.MsgUpdateVoterRoleResponse, error) {
-	if _, err := k.addressCodec.StringToBytes(msg.Creator); err != nil {
+	creator, err := k.addressCodec.StringToBytes(msg.Creator)
+	if err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid creator address: %s", err))
+	}
+
+	// Check if creator is the governance module account
+	if !bytes.Equal(k.GetAuthority(), creator) {
+		expectedAuthorityStr, _ := k.addressCodec.BytesToString(k.GetAuthority())
+		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "only governance account can update voter roles; expected %s, got %s", expectedAuthorityStr, msg.Creator)
 	}
 
 	// Validate voter role parameters
@@ -84,10 +91,7 @@ func (k msgServer) UpdateVoterRole(ctx context.Context, msg *types.MsgUpdateVote
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get voterRole")
 	}
 
-	// Checks if the msg creator is the same as the current owner
-	if msg.Creator != val.Creator {
-		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "incorrect owner")
-	}
+	// No need to check if msg creator matches val.Creator since only governance can update
 
 	var voterRole = types.VoterRole{
 		Creator:    msg.Creator,
@@ -107,8 +111,15 @@ func (k msgServer) UpdateVoterRole(ctx context.Context, msg *types.MsgUpdateVote
 }
 
 func (k msgServer) DeleteVoterRole(ctx context.Context, msg *types.MsgDeleteVoterRole) (*types.MsgDeleteVoterRoleResponse, error) {
-	if _, err := k.addressCodec.StringToBytes(msg.Creator); err != nil {
+	creator, err := k.addressCodec.StringToBytes(msg.Creator)
+	if err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid address: %s", err))
+	}
+
+	// Check if creator is the governance module account
+	if !bytes.Equal(k.GetAuthority(), creator) {
+		expectedAuthorityStr, _ := k.addressCodec.BytesToString(k.GetAuthority())
+		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "only governance account can delete voter roles; expected %s, got %s", expectedAuthorityStr, msg.Creator)
 	}
 
 	// Checks that the element exists
@@ -121,10 +132,7 @@ func (k msgServer) DeleteVoterRole(ctx context.Context, msg *types.MsgDeleteVote
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get voterRole")
 	}
 
-	// Checks if the msg creator is the same as the current owner
-	if msg.Creator != val.Creator {
-		return nil, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "incorrect owner")
-	}
+	// No need to check if msg creator matches val.Creator since only governance can delete
 
 	if err := k.VoterRole.Remove(ctx, msg.Id); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to delete voterRole")
