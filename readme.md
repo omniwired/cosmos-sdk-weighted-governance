@@ -1,52 +1,42 @@
-# Enhanced Governance & Staking Controls
+# Cosmos Weighted Governance SDK
 
-A Cosmos SDK blockchain portfolio project demonstrating advanced governance mechanisms and vesting-aware staking restrictions. Built with modern Cosmos SDK v0.53.3 and Ignite CLI v29.2.0 to showcase blockchain development skills.
+A Cosmos SDK blockchain implementing two advanced features: weighted voting governance and vesting-aware staking restrictions. Built with Cosmos SDK v0.53.3 and Ignite CLI v29.2.0.
 
-## Overview
+## Two Core Features
 
-This project showcases sophisticated blockchain governance patterns and cross-module integrations within the Cosmos ecosystem. It implements two core innovations that address real-world governance challenges in proof-of-stake networks.
+This project shows how to build advanced Cosmos SDK modules by implementing two features that tackle real blockchain governance challenges:
+
+### Feature 1: Weighted Voting Governance
+Role-based voting where different participants have different voting power multipliers
+
+### Feature 2: Vesting-Aware Staking Restrictions
+Prevents staking of unvested tokens to maintain proper token distribution schedules
 
 ## Architecture
 
-### 🗳️ Weighted Voting Module (`voting`)
+### Weighted Voting Module (`voting`)
 
-The weighted voting system introduces role-based governance where different participants have varying influence based on their contribution and stake in the network.
+The weighted voting system lets different participants have varying influence based on their role and contribution to the network.
 
-**Key Features:**
-- **Role-based multipliers**: Core contributors (2x), Validators (1.5x), Strategic partners (1.8x), Community members (1x)
-- **Dynamic role management**: On-chain role assignment and modification through governance proposals
-- **Comprehensive validation**: Input sanitization, role verification, and multiplier bounds checking
-- **Query optimization**: Efficient role lookup, statistics aggregation, and pagination support
+Key features include role-based multipliers where core contributors get 2x voting power, validators get 1.5x, strategic partners get 1.8x, and community members get 1x. The system allows dynamic role management through governance proposals, validates all inputs properly, and provides efficient queries for role lookups and statistics.
 
-**Technical Implementation:**
-- Collections-based state management for optimal performance
-- Protocol Buffers for type-safe message serialization
-- Custom keeper methods with cross-module query capabilities
-- AutoCLI integration for seamless command-line interaction
+Technical implementation uses Collections for state management, Protocol Buffers for message serialization, custom keeper methods for cross-module queries, and AutoCLI for command-line interaction.
 
-### 🔒 Vesting-Aware Staking Module (`delegation`)
+### Vesting-Aware Staking Module (`delegation`)
 
-The vesting-aware staking system prevents premature staking of unvested tokens, ensuring proper token distribution schedules are maintained.
+The vesting-aware staking system prevents people from staking tokens they don't technically own yet, making sure token distribution schedules work as intended.
 
-**Key Features:**
-- **Vesting account detection**: Automatic identification of vesting vs. standard accounts
-- **Staking eligibility validation**: Real-time checks against vesting schedules
-- **Detailed reporting**: Comprehensive eligibility responses with vesting status and amounts
-- **Cross-module integration**: Seamless interaction with auth and bank modules
+Key features include automatic detection of vesting accounts, real-time eligibility checks against vesting schedules, detailed reporting with vesting status and amounts, and smooth integration with auth and bank modules.
 
-**Technical Implementation:**
-- Interface-based design for vesting account abstraction
-- Context-aware validation using block time for vesting calculations
-- Comprehensive error handling with descriptive failure reasons
-- gRPC/REST API endpoints for external integration
+Technical implementation uses interface-based design for vesting account abstraction, context-aware validation using block time, comprehensive error handling, and gRPC/REST API endpoints.
 
 ## Module Interactions
 
-The system demonstrates advanced Cosmos SDK patterns:
-- **Inter-module communication**: Secure keeper-to-keeper interactions
-- **State management**: Collections framework for efficient data storage
-- **Query optimization**: Paginated responses and indexed lookups
-- **Transaction validation**: Multi-layer validation with ante handlers
+The system shows several important Cosmos SDK patterns:
+- Inter-module communication with secure keeper-to-keeper interactions
+- State management using Collections framework for efficient data storage
+- Query optimization with paginated responses and indexed lookups
+- Transaction validation with multi-layer validation and ante handlers
 
 ## Getting Started
 
@@ -136,17 +126,17 @@ ignite generate ts-client
 
 ## A Word About Democracy... and Staking
 
-You know, it's funny how we've recreated the same old power dynamics in blockchain governance. Core contributors get 2x voting weight because apparently writing code makes you twice as wise about network decisions. Validators get 1.5x because running servers is apparently worth more than just holding tokens. It's like we've invented digital aristocracy, but with better documentation and open-source transparency! 😄
+You know, it's funny how we've recreated the same old power dynamics in blockchain governance. Core contributors get 2x voting weight because apparently writing code makes you twice as wise about network decisions. Validators get 1.5x because running servers is apparently worth more than just holding tokens. It's like we've invented digital aristocracy, but with better documentation and open-source transparency!
 
 As for the vesting restrictions on staking - well, someone had to be the fun police and make sure people can't stake tokens they don't technically own yet. Think of it as blockchain parental controls: "No, you can't stake your allowance until it's actually yours!" But hey, at least the smart contracts are impartial enforcers, unlike that one friend who always changes the rules mid-game.
 
 ## Technical Specifications
 
 ### Dependencies
-- **Cosmos SDK**: v0.53.3 (latest stable with security patches)
+- **Cosmos SDK**: v0.53.3 (latest stable)
 - **CometBFT**: v0.38.x (Tendermint consensus)
 - **IBC**: v8.x (Inter-Blockchain Communication)
-- **Collections**: Latest (efficient state management)
+- **Collections**: Latest (state management framework)
 
 ### Module Specifications
 - **State Management**: Collections-based with optimized indexing
@@ -154,16 +144,16 @@ As for the vesting restrictions on staking - well, someone had to be the fun pol
 - **Query Engine**: gRPC/REST with pagination support
 - **CLI Integration**: AutoCLI with custom command extensions
 
-## Contributing
+## Project Purpose
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+This is a portfolio project I built to showcase my Cosmos SDK development skills. It shows experience with:
+- Custom module development with complex state management
+- Cross-module communication and keeper interactions
+- Protocol buffer message design and validation
+- CLI integration and query optimization
+- Blockchain governance and staking mechanisms
 
-### Development Workflow
-1. Fork the repository
-2. Create feature branch
-3. Implement changes with tests
-4. Update documentation
-5. Submit pull request
+Note: This is an educational/portfolio project, not intended for production use.
 
 ## License
 
