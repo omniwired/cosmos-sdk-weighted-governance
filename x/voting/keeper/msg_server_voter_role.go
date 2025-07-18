@@ -10,6 +10,7 @@ import (
 
 	"cosmossdk.io/collections"
 	errorsmod "cosmossdk.io/errors"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
@@ -59,6 +60,20 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to set voterRole")
 	}
 
+	// Emit event
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeVoterRoleCreated,
+			sdk.NewAttribute(types.AttributeKeyRoleID, fmt.Sprintf("%d", nextId)),
+			sdk.NewAttribute(types.AttributeKeyAddress, msg.Address),
+			sdk.NewAttribute(types.AttributeKeyRole, msg.Role),
+			sdk.NewAttribute(types.AttributeKeyMultiplier, msg.Multiplier),
+			sdk.NewAttribute(types.AttributeKeyAddedBy, msg.AddedBy),
+			sdk.NewAttribute(types.AttributeKeyAddedAt, fmt.Sprintf("%d", msg.AddedAt)),
+		),
+	)
+
 	return &types.MsgCreateVoterRoleResponse{
 		Id: nextId,
 	}, nil
@@ -107,6 +122,19 @@ func (k msgServer) UpdateVoterRole(ctx context.Context, msg *types.MsgUpdateVote
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to update voterRole")
 	}
 
+	// Emit event
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeVoterRoleUpdated,
+			sdk.NewAttribute(types.AttributeKeyRoleID, fmt.Sprintf("%d", msg.Id)),
+			sdk.NewAttribute(types.AttributeKeyAddress, msg.Address),
+			sdk.NewAttribute(types.AttributeKeyRole, msg.Role),
+			sdk.NewAttribute(types.AttributeKeyMultiplier, msg.Multiplier),
+			sdk.NewAttribute(types.AttributeKeyUpdatedBy, msg.Creator),
+		),
+	)
+
 	return &types.MsgUpdateVoterRoleResponse{}, nil
 }
 
@@ -137,6 +165,17 @@ func (k msgServer) DeleteVoterRole(ctx context.Context, msg *types.MsgDeleteVote
 	if err := k.VoterRole.Remove(ctx, msg.Id); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to delete voterRole")
 	}
+
+	// Emit event
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	sdkCtx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeVoterRoleDeleted,
+			sdk.NewAttribute(types.AttributeKeyRoleID, fmt.Sprintf("%d", msg.Id)),
+			sdk.NewAttribute(types.AttributeKeyAddress, val.Address),
+			sdk.NewAttribute(types.AttributeKeyDeletedBy, msg.Creator),
+		),
+	)
 
 	return &types.MsgDeleteVoterRoleResponse{}, nil
 }
