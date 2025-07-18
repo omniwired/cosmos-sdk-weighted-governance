@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -13,8 +14,15 @@ import (
 )
 
 func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVoterRole) (*types.MsgCreateVoterRoleResponse, error) {
-	if _, err := k.addressCodec.StringToBytes(msg.Creator); err != nil {
+	creator, err := k.addressCodec.StringToBytes(msg.Creator)
+	if err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid creator address: %s", err))
+	}
+
+	// Check if creator is the governance module account
+	if !bytes.Equal(k.GetAuthority(), creator) {
+		expectedAuthorityStr, _ := k.addressCodec.BytesToString(k.GetAuthority())
+		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "only governance account can create voter roles; expected %s, got %s", expectedAuthorityStr, msg.Creator)
 	}
 
 	// Validate voter role parameters
