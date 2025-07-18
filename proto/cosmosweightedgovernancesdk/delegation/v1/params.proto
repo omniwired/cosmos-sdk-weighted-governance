@@ -10,4 +10,7 @@ option go_package = "cosmos-weighted-governance-sdk/x/delegation/types";
 message Params {
   option (amino.name) = "cosmosweightedgovernancesdk/x/delegation/Params";
   option (gogoproto.equal) = true;
+
+  // stake_denom is the denomination of the staking token
+  string stake_denom = 1;
 }

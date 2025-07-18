@@ -54,15 +54,24 @@ func (k Keeper) CheckStakingEligibility(ctx context.Context, address string) (*t
 	// Calculate amounts (assuming we're dealing with the native token)
 	var vestedAmount, vestingAmount int64
 	
-	// Get the native token denomination (usually "stake" or similar)
-	nativeDenom := "stake" // This should be configurable or determined from app state
-	
-	if vestedCoins.AmountOf(nativeDenom).IsPositive() {
-		vestedAmount = vestedCoins.AmountOf(nativeDenom).Int64()
+	// Get the stake denomination from module params
+	params, err := k.Params.Get(ctx)
+	if err != nil {
+		return &types.QueryStakingEligibilityResponse{
+			IsEligible: false,
+			Reason:     "failed to get module params",
+			IsVesting:  true,
+		}, nil
 	}
 	
-	if vestingCoins.AmountOf(nativeDenom).IsPositive() {
-		vestingAmount = vestingCoins.AmountOf(nativeDenom).Int64()
+	stakeDenom := params.StakeDenom
+	
+	if vestedCoins.AmountOf(stakeDenom).IsPositive() {
+		vestedAmount = vestedCoins.AmountOf(stakeDenom).Int64()
+	}
+	
+	if vestingCoins.AmountOf(stakeDenom).IsPositive() {
+		vestingAmount = vestingCoins.AmountOf(stakeDenom).Int64()
 	}
 
 	// Check if all tokens are vested
