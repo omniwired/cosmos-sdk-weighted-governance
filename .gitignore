@@ -1,3 +1,4 @@
+# Development files
 vue/node_modules
 vue/dist
 release/
@@ -7,3 +8,45 @@ release/
 *.dot
 *.log
 *.ign
+
+# Build artifacts
+build/
+dist/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Development artifacts
+governance-staking-prd.md
+blockchain.log
+*.tmp
+*.temp
+
+# Go specific
+vendor/
+*.test
+*.prof
+coverage.txt
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+.nyc_output/
+coverage/
+
+# Local environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
