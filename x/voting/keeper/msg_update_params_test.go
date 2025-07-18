@@ -36,12 +36,13 @@ func TestMsgUpdateParams(t *testing.T) {
 			expErrMsg: "invalid authority",
 		},
 		{
-			name: "send enabled param",
+			name: "invalid params",
 			input: &types.MsgUpdateParams{
 				Authority: authorityStr,
-				Params:    types.Params{},
+				Params:    types.Params{}, // Empty params will fail validation
 			},
-			expErr: false,
+			expErr:    true,
+			expErrMsg: "max voter roles per address must be greater than 0",
 		},
 		{
 			name: "all good",

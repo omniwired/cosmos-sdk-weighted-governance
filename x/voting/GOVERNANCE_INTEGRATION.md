@@ -30,20 +30,9 @@ govHooks := votingkeeper.NewGovHooksWrapper(
 app.GovKeeper.SetHooks(govtypes.NewMultiGovHooks(govHooks))
 ```
 
-### 2. Custom Tally Handler (Optional)
+### 2. Event Monitoring
 
-For full integration with weighted voting during tally:
-
-```go
-// Create custom tally handler
-tallyHandler := votingkeeper.NewWeightedTallyHandler(
-    app.VotingKeeper,
-    app.StakingKeeper,
-)
-
-// Note: The current gov module doesn't support custom tally handlers directly
-// You would need to modify the gov module or create a wrapper module
-```
+The governance hooks will emit events when votes are cast with multipliers applied. Monitor these events to track weighted voting behavior.
 
 ### 3. Governance Proposal Integration
 

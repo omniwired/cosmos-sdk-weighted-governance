@@ -22,7 +22,11 @@ func TestGenesisState_Validate(t *testing.T) {
 		{
 			desc: "valid genesis state",
 			genState: &types.GenesisState{
-				PortId:        types.PortID,
+				PortId: types.PortID,
+				Params: types.Params{
+					MaxVoterRolesPerAddress: 1,
+					RoleCreationCooldown:    300,
+				},
 				VoterRoleList: []types.VoterRole{{Id: 0}, {Id: 1}}, VoterRoleCount: 2,
 			}, valid: true,
 		}, {

@@ -94,7 +94,6 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 	}
 
 	// Emit event
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeVoterRoleCreated,
@@ -130,7 +129,7 @@ func (k msgServer) UpdateVoterRole(ctx context.Context, msg *types.MsgUpdateVote
 	}
 
 	// Checks that the element exists
-	val, err := k.VoterRole.Get(ctx, msg.Id)
+	_, err = k.VoterRole.Get(ctx, msg.Id)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
 			return nil, errorsmod.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))

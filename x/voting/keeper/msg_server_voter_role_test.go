@@ -14,27 +14,42 @@ func TestVoterRoleMsgServerCreate(t *testing.T) {
 	f := initFixture(t)
 	srv := keeper.NewMsgServerImpl(f.keeper)
 
-	creator, err := f.addressCodec.BytesToString([]byte("signerAddr__________________"))
+	// Use governance authority
+	creator, err := f.addressCodec.BytesToString(f.keeper.GetAuthority())
 	require.NoError(t, err)
 
-	for i := 0; i < 5; i++ {
-		resp, err := srv.CreateVoterRole(f.ctx, &types.MsgCreateVoterRole{Creator: creator})
-		require.NoError(t, err)
-		require.Equal(t, i, int(resp.Id))
-	}
+	// Test with valid parameters
+	resp, err := srv.CreateVoterRole(f.ctx, &types.MsgCreateVoterRole{
+		Creator:    creator,
+		Address:    "cosmos1wd5kwmn9wfqkgerjta047h6lta047h6lta047h6lta047wfl63q",
+		Role:       "validator",
+		Multiplier: "1.5",
+		AddedAt:    1234567890,
+		AddedBy:    creator,
+	})
+	require.NoError(t, err)
+	require.Equal(t, uint64(1), resp.Id)
 }
 
 func TestVoterRoleMsgServerUpdate(t *testing.T) {
 	f := initFixture(t)
 	srv := keeper.NewMsgServerImpl(f.keeper)
 
-	creator, err := f.addressCodec.BytesToString([]byte("signerAddr__________________"))
+	// Use governance authority
+	creator, err := f.addressCodec.BytesToString(f.keeper.GetAuthority())
 	require.NoError(t, err)
 
 	unauthorizedAddr, err := f.addressCodec.BytesToString([]byte("unauthorizedAddr___________"))
 	require.NoError(t, err)
 
-	_, err = srv.CreateVoterRole(f.ctx, &types.MsgCreateVoterRole{Creator: creator})
+	_, err = srv.CreateVoterRole(f.ctx, &types.MsgCreateVoterRole{
+		Creator:    creator,
+		Address:    "cosmos1wd5kwmn9wfqkgerjta047h6lta047h6lta047h6lta047wfl63q",
+		Role:       "validator", 
+		Multiplier: "1.5",
+		AddedAt:    1234567890,
+		AddedBy:    creator,
+	})
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -50,7 +65,7 @@ func TestVoterRoleMsgServerUpdate(t *testing.T) {
 		{
 			desc:    "unauthorized",
 			request: &types.MsgUpdateVoterRole{Creator: unauthorizedAddr},
-			err:     sdkerrors.ErrUnauthorized,
+			err:     types.ErrInvalidSigner,
 		},
 		{
 			desc:    "key not found",
@@ -58,8 +73,16 @@ func TestVoterRoleMsgServerUpdate(t *testing.T) {
 			err:     sdkerrors.ErrKeyNotFound,
 		},
 		{
-			desc:    "completed",
-			request: &types.MsgUpdateVoterRole{Creator: creator},
+			desc: "completed",
+			request: &types.MsgUpdateVoterRole{
+				Creator:    creator,
+				Id:         1,
+				Address:    "cosmos1wd5kwmn9wfqkgerjta047h6lta047h6lta047h6lta047wfl63q",
+				Role:       "core_contributor",
+				Multiplier: "2.0",
+				AddedAt:    1234567890,
+				AddedBy:    creator,
+			},
 		},
 	}
 	for _, tc := range tests {
@@ -78,13 +101,21 @@ func TestVoterRoleMsgServerDelete(t *testing.T) {
 	f := initFixture(t)
 	srv := keeper.NewMsgServerImpl(f.keeper)
 
-	creator, err := f.addressCodec.BytesToString([]byte("signerAddr__________________"))
+	// Use governance authority
+	creator, err := f.addressCodec.BytesToString(f.keeper.GetAuthority())
 	require.NoError(t, err)
 
 	unauthorizedAddr, err := f.addressCodec.BytesToString([]byte("unauthorizedAddr___________"))
 	require.NoError(t, err)
 
-	_, err = srv.CreateVoterRole(f.ctx, &types.MsgCreateVoterRole{Creator: creator})
+	_, err = srv.CreateVoterRole(f.ctx, &types.MsgCreateVoterRole{
+		Creator:    creator,
+		Address:    "cosmos1wd5kwmn9wfqkgerjta047h6lta047h6lta047h6lta047wfl63q",
+		Role:       "validator",
+		Multiplier: "1.5",
+		AddedAt:    1234567890,
+		AddedBy:    creator,
+	})
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -100,7 +131,7 @@ func TestVoterRoleMsgServerDelete(t *testing.T) {
 		{
 			desc:    "unauthorized",
 			request: &types.MsgDeleteVoterRole{Creator: unauthorizedAddr},
-			err:     sdkerrors.ErrUnauthorized,
+			err:     types.ErrInvalidSigner,
 		},
 		{
 			desc:    "key not found",
@@ -109,7 +140,7 @@ func TestVoterRoleMsgServerDelete(t *testing.T) {
 		},
 		{
 			desc:    "completed",
-			request: &types.MsgDeleteVoterRole{Creator: creator},
+			request: &types.MsgDeleteVoterRole{Creator: creator, Id: 1},
 		},
 	}
 	for _, tc := range tests {

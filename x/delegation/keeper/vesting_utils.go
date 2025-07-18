@@ -151,9 +151,6 @@ func (k Keeper) ValidateStakingTransaction(ctx context.Context, delegatorAddr st
 	blockTime := sdk.UnwrapSDKContext(ctx).BlockTime()
 	vestedCoins := vestingAcc.GetVestedCoins(blockTime)
 	
-	// Get current balance
-	balance := k.bankKeeper.GetBalance(ctx, accAddr, params.StakeDenom)
-	
 	// Calculate how much is available for staking (vested coins only)
 	vestedAmount := vestedCoins.AmountOf(params.StakeDenom)
 	
