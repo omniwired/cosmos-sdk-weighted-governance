@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package cosmosweightedgovernancesdk.voting.v1;
+
+import "amino/amino.proto";
+import "cosmosweightedgovernancesdk/voting/v1/params.proto";
+import "cosmosweightedgovernancesdk/voting/v1/voter_role.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosmos-weighted-governance-sdk/x/voting/types";
+
+// GenesisState defines the voting module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+  string port_id = 2;
+  repeated VoterRole voter_role_list = 3 [(gogoproto.nullable) = false];
+  uint64 voter_role_count = 4;
+}

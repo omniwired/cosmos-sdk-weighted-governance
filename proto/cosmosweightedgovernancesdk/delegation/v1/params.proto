@@ -1,0 +1,13 @@
+syntax = "proto3";
+package cosmosweightedgovernancesdk.delegation.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "cosmos-weighted-governance-sdk/x/delegation/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "cosmosweightedgovernancesdk/x/delegation/Params";
+  option (gogoproto.equal) = true;
+}

@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package cosmosweightedgovernancesdk.delegation.v1;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmosweightedgovernancesdk/delegation/v1/params.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "cosmos-weighted-governance-sdk/x/delegation/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/enhanced-governance-staking/delegation/v1/params";
+  }
+
+  // StakingEligibility Queries a list of StakingEligibility items.
+  rpc StakingEligibility(QueryStakingEligibilityRequest) returns (QueryStakingEligibilityResponse) {
+    option (google.api.http).get = "/enhanced-governance-staking/delegation/v1/staking_eligibility/{address}";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryStakingEligibilityRequest defines the QueryStakingEligibilityRequest message.
+message QueryStakingEligibilityRequest {
+  string address = 1;
+}
+
+// QueryStakingEligibilityResponse defines the QueryStakingEligibilityResponse message.
+message QueryStakingEligibilityResponse {
+  bool is_eligible = 1;
+  string reason = 2;
+  bool is_vesting = 3;
+  int64 vested_amount = 4;
+  int64 vesting_amount = 5;
+}

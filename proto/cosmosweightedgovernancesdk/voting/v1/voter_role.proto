@@ -1,0 +1,15 @@
+syntax = "proto3";
+package cosmosweightedgovernancesdk.voting.v1;
+
+option go_package = "cosmos-weighted-governance-sdk/x/voting/types";
+
+// VoterRole defines the VoterRole message.
+message VoterRole {
+  uint64 id = 1;
+  string address = 2;
+  string role = 3;
+  string multiplier = 4;
+  int64 added_at = 5;
+  string added_by = 6;
+  string creator = 7;
+}

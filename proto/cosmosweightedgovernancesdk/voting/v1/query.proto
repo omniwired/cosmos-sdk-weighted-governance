@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package cosmosweightedgovernancesdk.voting.v1;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmosweightedgovernancesdk/voting/v1/params.proto";
+import "cosmosweightedgovernancesdk/voting/v1/voter_role.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+
+option go_package = "cosmos-weighted-governance-sdk/x/voting/types";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/enhanced-governance-staking/voting/v1/params";
+  }
+
+  // ListVoterRole Queries a list of VoterRole items.
+  rpc GetVoterRole(QueryGetVoterRoleRequest) returns (QueryGetVoterRoleResponse) {
+    option (google.api.http).get = "/enhanced-governance-staking/voting/v1/voter_role/{id}";
+  }
+
+  // ListVoterRole defines the ListVoterRole RPC.
+  rpc ListVoterRole(QueryAllVoterRoleRequest) returns (QueryAllVoterRoleResponse) {
+    option (google.api.http).get = "/enhanced-governance-staking/voting/v1/voter_role";
+  }
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryGetVoterRoleRequest defines the QueryGetVoterRoleRequest message.
+message QueryGetVoterRoleRequest {
+  uint64 id = 1;
+}
+
+// QueryGetVoterRoleResponse defines the QueryGetVoterRoleResponse message.
+message QueryGetVoterRoleResponse {
+  VoterRole voter_role = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryAllVoterRoleRequest defines the QueryAllVoterRoleRequest message.
+message QueryAllVoterRoleRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllVoterRoleResponse defines the QueryAllVoterRoleResponse message.
+message QueryAllVoterRoleResponse {
+  repeated VoterRole voter_role = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

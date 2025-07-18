@@ -1,0 +1,14 @@
+syntax = "proto3";
+package cosmosweightedgovernancesdk.voting.v1;
+
+option go_package = "cosmos-weighted-governance-sdk/x/voting/types";
+
+// VotingPacketData defines the Voting data packet.
+message VotingPacketData {
+  oneof packet {
+    NoData noData = 1;
+  }
+}
+
+// NoData defines an empty data packet.
+message NoData {}
