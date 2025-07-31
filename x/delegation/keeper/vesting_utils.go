@@ -12,7 +12,6 @@ import (
 
 // CheckStakingEligibility checks if an account is eligible to stake
 func (k Keeper) CheckStakingEligibility(ctx context.Context, address string) (*types.QueryStakingEligibilityResponse, error) {
-	// Convert address string to AccAddress
 	accAddr, err := k.authKeeper.AddressCodec().StringToBytes(address)
 	if err != nil {
 		return &types.QueryStakingEligibilityResponse{
@@ -22,7 +21,6 @@ func (k Keeper) CheckStakingEligibility(ctx context.Context, address string) (*t
 		}, nil
 	}
 
-	// Get account from auth keeper
 	account := k.authKeeper.GetAccount(ctx, accAddr)
 	if account == nil {
 		return &types.QueryStakingEligibilityResponse{
@@ -32,10 +30,9 @@ func (k Keeper) CheckStakingEligibility(ctx context.Context, address string) (*t
 		}, nil
 	}
 
-	// Check if account is a vesting account
 	vestingAcc, isVesting := account.(types.VestingAccount)
 	if !isVesting {
-		// Non-vesting accounts are always eligible
+		// regular accounts can stake whatever
 		return &types.QueryStakingEligibilityResponse{
 			IsEligible: true,
 			Reason:     "non-vesting account",
@@ -43,18 +40,15 @@ func (k Keeper) CheckStakingEligibility(ctx context.Context, address string) (*t
 		}, nil
 	}
 
-	// For vesting accounts, check vesting status
+	// vesting accounts need special handling
 	blockTime := sdk.UnwrapSDKContext(ctx).BlockTime()
 	
-	// Get vesting and vested amounts
 	vestedCoins := vestingAcc.GetVestedCoins(blockTime)
 	vestingCoins := vestingAcc.GetVestingCoins(blockTime)
 	originalVesting := vestingAcc.GetOriginalVesting()
 
-	// Calculate amounts (assuming we're dealing with the native token)
 	var vestedAmount, vestingAmount int64
 	
-	// Get the stake denomination from module params
 	params, err := k.Params.Get(ctx)
 	if err != nil {
 		return &types.QueryStakingEligibilityResponse{
@@ -74,7 +68,7 @@ func (k Keeper) CheckStakingEligibility(ctx context.Context, address string) (*t
 		vestingAmount = vestingCoins.AmountOf(stakeDenom).Int64()
 	}
 
-	// Check if all tokens are vested
+	// check if fully vested
 	allVested := vestingCoins.IsZero() || 
 		vestedCoins.IsAllGTE(originalVesting)
 
@@ -88,7 +82,7 @@ func (k Keeper) CheckStakingEligibility(ctx context.Context, address string) (*t
 		}, nil
 	}
 
-	// If tokens are still vesting, restrict staking
+	// nope, still vesting
 	return &types.QueryStakingEligibilityResponse{
 		IsEligible:    false,
 		Reason:        "tokens are still vesting - staking restricted",
@@ -116,45 +110,36 @@ func (k Keeper) IsVestingAccount(ctx context.Context, address string) bool {
 
 // ValidateStakingTransaction validates a staking transaction for vesting restrictions
 func (k Keeper) ValidateStakingTransaction(ctx context.Context, delegatorAddr string, amount sdk.Coin) error {
-	// Convert address
 	accAddr, err := k.authKeeper.AddressCodec().StringToBytes(delegatorAddr)
 	if err != nil {
 		return fmt.Errorf("invalid delegator address: %s", err)
 	}
 
-	// Get account
 	account := k.authKeeper.GetAccount(ctx, accAddr)
 	if account == nil {
 		return fmt.Errorf("account not found")
 	}
 
-	// Check if it's a vesting account
 	vestingAcc, isVesting := account.(types.VestingAccount)
 	if !isVesting {
-		// Non-vesting accounts can stake freely
-		return nil
+		return nil // regular accounts have no restrictions
 	}
 
-	// Get module params for stake denomination
 	params, err := k.Params.Get(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get module params: %s", err)
 	}
 
-	// Check if the coin being staked matches our stake denomination
 	if amount.Denom != params.StakeDenom {
-		// Not staking the native token, allow it
-		return nil
+		return nil // not staking native token, who cares
 	}
 
-	// Get vesting information
 	blockTime := sdk.UnwrapSDKContext(ctx).BlockTime()
 	vestedCoins := vestingAcc.GetVestedCoins(blockTime)
 	
-	// Calculate how much is available for staking (vested coins only)
 	vestedAmount := vestedCoins.AmountOf(params.StakeDenom)
 	
-	// Check if user is trying to stake more than vested amount
+	// trying to stake more than they've vested? nice try
 	if amount.Amount.GT(vestedAmount) {
 		return fmt.Errorf("cannot stake unvested tokens: requested %s, vested %s %s", 
 			amount.Amount.String(), vestedAmount.String(), params.StakeDenom)

@@ -14,11 +14,11 @@ func TestVoterRoleMsgServerCreate(t *testing.T) {
 	f := initFixture(t)
 	srv := keeper.NewMsgServerImpl(f.keeper)
 
-	// Use governance authority
+	// gov authority
 	creator, err := f.addressCodec.BytesToString(f.keeper.GetAuthority())
 	require.NoError(t, err)
 
-	// Test with valid parameters
+	// happy path test
 	resp, err := srv.CreateVoterRole(f.ctx, &types.MsgCreateVoterRole{
 		Creator:    creator,
 		Address:    "cosmos1wd5kwmn9wfqkgerjta047h6lta047h6lta047h6lta047wfl63q",
@@ -35,13 +35,13 @@ func TestVoterRoleMsgServerUpdate(t *testing.T) {
 	f := initFixture(t)
 	srv := keeper.NewMsgServerImpl(f.keeper)
 
-	// Use governance authority
 	creator, err := f.addressCodec.BytesToString(f.keeper.GetAuthority())
 	require.NoError(t, err)
 
 	unauthorizedAddr, err := f.addressCodec.BytesToString([]byte("unauthorizedAddr___________"))
 	require.NoError(t, err)
 
+	// create one to update later
 	_, err = srv.CreateVoterRole(f.ctx, &types.MsgCreateVoterRole{
 		Creator:    creator,
 		Address:    "cosmos1wd5kwmn9wfqkgerjta047h6lta047h6lta047h6lta047wfl63q",

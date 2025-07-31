@@ -20,19 +20,18 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid creator address: %s", err))
 	}
 
-	// Check if creator is the governance module account
+	// only gov can do this
 	if !bytes.Equal(k.GetAuthority(), creator) {
 		expectedAuthorityStr, _ := k.addressCodec.BytesToString(k.GetAuthority())
 		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "only governance account can create voter roles; expected %s, got %s", expectedAuthorityStr, msg.Creator)
 	}
 
-	// Get module params for rate limiting
 	params, err := k.Params.Get(ctx)
 	if err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get module params")
 	}
 
-	// Check rate limiting
+	// rate limiting check
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	currentTime := sdkCtx.BlockTime().Unix()
 	
@@ -46,18 +45,17 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 		}
 	}
 
-	// Validate voter role parameters
 	if err := k.ValidateVoterRole(msg.Address, msg.Role, msg.Multiplier); err != nil {
 		return nil, err
 	}
 
-	// Check if address already has a voter role
+	// check if they already have a role
 	if k.HasVoterRole(ctx, msg.Address) {
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidRequest,
 			fmt.Sprintf("address %s already has a voter role", msg.Address))
 	}
 	
-	// Check max roles per address limit
+	// max roles check
 	roleCount := k.CountRolesForAddress(ctx, msg.Address)
 	if roleCount >= params.MaxVoterRolesPerAddress {
 		return nil, errorsmod.Wrapf(sdkerrors.ErrInvalidRequest,
@@ -88,12 +86,13 @@ func (k msgServer) CreateVoterRole(ctx context.Context, msg *types.MsgCreateVote
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to set voterRole")
 	}
 
-	// Update last creation time for rate limiting
+	// update last creation time
 	if err = k.LastRoleCreationTime.Set(ctx, currentTime); err != nil {
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to update last creation time")
 	}
 
-	// Emit event
+	// TODO: maybe add metrics here for role creation tracking?
+	
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeVoterRoleCreated,
@@ -117,18 +116,17 @@ func (k msgServer) UpdateVoterRole(ctx context.Context, msg *types.MsgUpdateVote
 		return nil, errorsmod.Wrap(sdkerrors.ErrInvalidAddress, fmt.Sprintf("invalid creator address: %s", err))
 	}
 
-	// Check if creator is the governance module account
+	// same check as create - only gov
 	if !bytes.Equal(k.GetAuthority(), creator) {
 		expectedAuthorityStr, _ := k.addressCodec.BytesToString(k.GetAuthority())
 		return nil, errorsmod.Wrapf(types.ErrInvalidSigner, "only governance account can update voter roles; expected %s, got %s", expectedAuthorityStr, msg.Creator)
 	}
 
-	// Validate voter role parameters
 	if err := k.ValidateVoterRole(msg.Address, msg.Role, msg.Multiplier); err != nil {
 		return nil, err
 	}
 
-	// Checks that the element exists
+	// make sure it exists first
 	_, err = k.VoterRole.Get(ctx, msg.Id)
 	if err != nil {
 		if errors.Is(err, collections.ErrNotFound) {
@@ -137,8 +135,6 @@ func (k msgServer) UpdateVoterRole(ctx context.Context, msg *types.MsgUpdateVote
 
 		return nil, errorsmod.Wrap(sdkerrors.ErrLogic, "failed to get voterRole")
 	}
-
-	// No need to check if msg creator matches val.Creator since only governance can update
 
 	var voterRole = types.VoterRole{
 		Creator:    msg.Creator,
