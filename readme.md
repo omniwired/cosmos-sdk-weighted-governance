@@ -1,4 +1,4 @@
-# Cosmos Weighted Governance SDK
+# Cosmos Weighted Governance And Vesting Guard
 
 A Cosmos SDK blockchain implementing two advanced features: weighted voting governance and vesting-aware staking restrictions. Built with Cosmos SDK v0.53.3 and Ignite CLI v29.2.0.
 
